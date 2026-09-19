@@ -35,13 +35,14 @@ public class JwtService {
     }
 
     // 2. Método para generar y firmar el JWT
-    public String generateToken(String username) {
+    public String generateToken(String username, java.util.List<String> roles) {
         try {
             return Jwts.builder()
-                    .setSubject(username) // Asigna el usuario al token
-                    .setIssuedAt(new Date(System.currentTimeMillis())) // Fecha de emisión
-                    .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // Vence en 10 horas
-                    .signWith(getPrivateKey(), SignatureAlgorithm.RS256) // ¡Aquí ocurre la magia de la firma RSA!
+                    .claim("roles", roles) // <-- Empacamos los roles aquí
+                    .setSubject(username)
+                    .setIssuedAt(new java.util.Date(System.currentTimeMillis()))
+                    .setExpiration(new java.util.Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                    .signWith(getPrivateKey(), io.jsonwebtoken.SignatureAlgorithm.RS256)
                     .compact();
         } catch (Exception e) {
             throw new RuntimeException("Error al generar el token JWT firmado con RSA", e);

@@ -28,7 +28,11 @@ public class AuthController {
         );
 
         // 2. Si todo es correcto, generamos el Token firmado con RSA
-        String token = jwtService.generateToken(authentication.getName());
+        java.util.List<String> roles = authentication.getAuthorities().stream()
+                .map(org.springframework.security.core.GrantedAuthority::getAuthority)
+                .toList();
+        
+        String token = jwtService.generateToken(authentication.getName(), roles);
 
         // 3. Devolvemos el token al usuario
         return ResponseEntity.ok(token);

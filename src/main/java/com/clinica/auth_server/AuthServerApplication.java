@@ -20,22 +20,44 @@ public class AuthServerApplication {
     }
 
     // Este código se ejecuta automáticamente al darle "Play" al proyecto
-    @Bean
+   @Bean
     CommandLineRunner initDatabase(UsuarioRepository usuarioRepository, RolRepository rolRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            // Solo crea el usuario si la base de datos está vacía
-            if (usuarioRepository.findByUsername("admin").isEmpty()) {
-                Rol rolAdmin = new Rol("ROLE_ADMIN");
-                rolRepository.save(rolAdmin);
+            // Creamos los roles
+            Rol rolAdmin = rolRepository.findByNombre("ROLE_ADMIN").orElseGet(() -> rolRepository.save(new Rol("ROLE_ADMIN")));
+            Rol rolOperador = rolRepository.findByNombre("ROLE_OPERADOR").orElseGet(() -> rolRepository.save(new Rol("ROLE_OPERADOR")));
 
+            // Creamos usuario Admin
+            if (usuarioRepository.findByUsername("admin").isEmpty()) {
                 Usuario admin = new Usuario();
                 admin.setUsername("admin");
-                // Encriptamos la contraseña "12345"
                 admin.setPassword(passwordEncoder.encode("12345")); 
                 admin.setRoles(Set.of(rolAdmin));
-
                 usuarioRepository.save(admin);
-                System.out.println("✅ Usuario de prueba creado: admin / 12345");
+                System.out.println("✅ Usuario ADMIN creado: admin / 12345");
+            }
+
+            // Creamos usuario Operador
+            if (usuarioRepository.findByUsername("operador").isEmpty()) {
+                Usuario operador = new Usuario();
+                operador.setUsername("operador");
+                operador.setPassword(passwordEncoder.encode("12345")); 
+                operador.setRoles(Set.of(rolOperador));
+                usuarioRepository.save(operador);
+                System.out.println("✅ Usuario OPERADOR creado: operador / 12345");
+            }
+        };
+    }
+
+    @Bean
+    public org.springframework.web.servlet.config.annotation.WebMvcConfigurer corsConfigurer() {
+        return new org.springframework.web.servlet.config.annotation.WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(org.springframework.web.servlet.config.annotation.CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:4500")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*");
             }
         };
     }
