@@ -80,6 +80,30 @@
             <version>0.11.5</version>
             <scope>runtime</scope>
         </dependency>
+		<!-- ══ Rate Limiting ══════════════════════════════════════════════════ -->
+		<!-- Bucket4j: implementa el algoritmo Token Bucket para rate limiting  -->
+		<dependency>
+			<groupId>com.bucket4j</groupId>
+			<artifactId>bucket4j-core</artifactId>
+			<version>8.10.1</version>
+		</dependency>
+		<!-- Spring Cache para almacenar los buckets por IP en memoria         -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cache</artifactId>
+		</dependency>
+		<!-- Caffeine: implementación de cache rápida en memoria               -->
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+		</dependency>
+
+		<!-- ══ Lombok ════════════════════════════════════════════════════════ -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
 
 	<build>

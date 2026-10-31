@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: clinica-auth-server
+    runtime: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: DB_URL
+        value: jdbc:postgresql://ep-flat-brook-b5vu8mll-pooler.c-7.us-east-2.aws.neon.tech/neondb?user=neondb_owner&password=npg_z8x3kNHyoPiq&sslmode=require&channelBinding=require
+      - key: DB_USERNAME
+        value: neondb_owner
+      - key: DB_PASSWORD
+        value: npg_z8x3kNHyoPiq
+      - key: ALLOWED_ORIGINS
+        value: https://clinica-frontend.onrender.com,http://localhost:4200
+      - key: TURNSTILE_SECRET_KEY
+        value: 1x0000000000000000000000000000000AA
