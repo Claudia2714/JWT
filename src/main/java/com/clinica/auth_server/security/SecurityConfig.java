@@ -32,9 +32,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // Soporta múltiples orígenes separados por coma desde la variable de entorno
-        List<String> origenes = List.of(allowedOrigins.split(","));
-        config.setAllowedOrigins(origenes);
+        // Permite cualquier subdominio en Render (*.onrender.com) y localhost
+        config.addAllowedOriginPattern("https://*.onrender.com");
+        config.addAllowedOriginPattern("http://localhost:*");
+        if (allowedOrigins != null && !allowedOrigins.isBlank()) {
+            for (String origin : allowedOrigins.split(",")) {
+                config.addAllowedOriginPattern(origin.trim());
+            }
+        }
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
@@ -79,4 +84,3 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 }
-
