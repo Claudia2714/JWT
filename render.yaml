@@ -18,3 +18,4 @@ services:
         value: https://clinica-frontend.onrender.com,http://localhost:4200
       - key: TURNSTILE_SECRET_KEY
         value: 1x0000000000000000000000000000000AA
+
