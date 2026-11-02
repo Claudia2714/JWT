@@ -11,6 +11,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -21,18 +22,19 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    /**
-     * Orígenes permitidos para CORS. En desarrollo: http://localhost:4200.
-     * En producción se lee de la variable de entorno ALLOWED_ORIGINS.
-     */
+    private final JwtAuthenticationFilter jwtFilter;
+
     @Value("${app.cors.allowed-origins:http://localhost:4200}")
     private String allowedOrigins;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
 
     // ─── CORS Global ─────────────────────────────────────────────────────────
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        // Permite cualquier subdominio en Render (*.onrender.com) y localhost
         config.addAllowedOriginPattern("https://*.onrender.com");
         config.addAllowedOriginPattern("http://localhost:*");
         if (allowedOrigins != null && !allowedOrigins.isBlank()) {
@@ -53,32 +55,28 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Sin sesión HTTP — el auth-server solo emite tokens, no mantiene estado
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-            // Deshabilitar Basic Auth y formulario de login (elimina el mensaje de contraseña generada)
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable())
-
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/login").permitAll() // El login es público
+                .requestMatchers("/auth/login").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .requestMatchers("/api/usuarios/**").authenticated()
                 .anyRequest().authenticated()
-            );
+            )
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // Usamos BCrypt para encriptar las contraseñas
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Exponemos el AuthenticationManager para que el AuthController pueda usarlo
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
